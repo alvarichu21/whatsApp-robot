@@ -1,26 +1,33 @@
 import os
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
+import openai
 
 app = Flask(__name__)
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    incoming_msg = request.values.get('Body', '').strip().lower()
-    
-    # Crear respuesta automática
+    incoming_msg = request.values.get('Body', '').strip()
     resp = MessagingResponse()
-    
-    if incoming_msg == "hola":
-        resp.message("¡Hola! Soy tu bot funcionando 😊")
-    else:
-        resp.message("Recibí tu mensaje: " + incoming_msg)
-    
+
+    try:
+        completion = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": incoming_msg}],
+            max_tokens=150
+        )
+        reply = completion.choices[0].message['content'].strip()
+    except Exception as e:
+        print("Error OpenAI:", e)
+        reply = "Lo siento, hubo un error procesando tu mensaje."
+
+    resp.message(reply)
     return str(resp), 200
 
 @app.route("/", methods=["GET"])
 def home():
-    return "WhatsApp bot running!"
+    return "WhatsApp GPT bot funcionando!"
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
