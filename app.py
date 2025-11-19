@@ -1,37 +1,31 @@
 import os
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
-import openai
-print("DEBUG: OPENAI_API_KEY =", os.getenv("OPENAI_API_KEY"))
-openai.api_key = os.getenv("OPENAI_API_KEY")
+from openai import OpenAI
+
+# Configuración de OpenAI (nueva API)
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 app = Flask(__name__)
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
     incoming_msg = request.values.get("Body", "").strip()
     resp = MessagingResponse()
 
-alvarichu21-patch-3-1
-try:
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": incoming_msg}],
-        max_tokens=300n
-    )
-    reply = completion.choices[0].message["content"].strip()
+    try:
+        # Nueva API correcta
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": incoming_msg}],
+            max_tokens=300
+        )
+        reply = response.choices[0].message.content.strip()
 
-response = openai.chat.completions.create(
-    model="gpt-3.5-turbo",
-    messages=[{"role": "user", "content": incoming_msg}],
-    max_tokens=300
-)
-reply = response.choices[0].message.content
- main
-except Exception as e:
-    # 🔹 Aquí capturamos el error real y lo mostramos en logs y WhatsApp
-    print("ERROR GPT DETALLADO:", e)
-    reply = f"Lo siento, hubo un error procesando tu mensaje: {e}"
+    except Exception as e:
+        print("ERROR GPT DETALLADO:", e)
+        reply = f"Lo siento, hubo un error procesando tu mensaje."
+
     resp.message(reply)
     return str(resp), 200
 
