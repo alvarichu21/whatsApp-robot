@@ -8,18 +8,18 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    incoming_msg = request.values.get('Body', '').strip()
+    incoming_msg = request.values.get("Body", "").strip()
     resp = MessagingResponse()
 
     try:
         completion = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": incoming_msg}],
-            max_tokens=150
+            max_tokens=300
         )
-        reply = completion.choices[0].message['content'].strip()
+        reply = completion.choices[0].message["content"].strip()
     except Exception as e:
-        print("Error OpenAI:", e)
+        print("ERROR GPT:", e)
         reply = "Lo siento, hubo un error procesando tu mensaje."
 
     resp.message(reply)
