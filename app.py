@@ -12,13 +12,12 @@ def webhook():
     incoming_msg = request.values.get("Body", "").strip()
     resp = MessagingResponse()
 
-try:
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": incoming_msg}],
-        max_tokens=300
-    )
-    reply = completion.choices[0].message["content"].strip()
+response = openai.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[{"role": "user", "content": incoming_msg}],
+    max_tokens=300
+)
+reply = response.choices[0].message.content
 except Exception as e:
     # 🔹 Aquí capturamos el error real y lo mostramos en logs y WhatsApp
     print("ERROR GPT DETALLADO:", e)
