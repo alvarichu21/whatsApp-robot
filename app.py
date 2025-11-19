@@ -12,17 +12,17 @@ def webhook():
     incoming_msg = request.values.get("Body", "").strip()
     resp = MessagingResponse()
 
-    try:
-        completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": incoming_msg}],
-            max_tokens=300
-        )
-        reply = completion.choices[0].message["content"].strip()
-    except Exception as e:
-        print("ERROR GPT:", e)
-        reply = "Lo siento, hubo un error procesando tu mensaje."
-
+try:
+    completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": incoming_msg}],
+        max_tokens=300
+    )
+    reply = completion.choices[0].message["content"].strip()
+except Exception as e:
+    # 🔹 Aquí capturamos el error real y lo mostramos en logs y WhatsApp
+    print("ERROR GPT DETALLADO:", e)
+    reply = f"Lo siento, hubo un error procesando tu mensaje: {e}"
     resp.message(reply)
     return str(resp), 200
 
